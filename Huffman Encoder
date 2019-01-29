@@ -1,0 +1,222 @@
+//This is the c++ code for Huffman Compression by M.Zubair BESE-23C MCS, NUST.
+#include<iostream>
+#include<string>
+#include<map>
+using namespace std;
+struct TreeNode{
+	int value;
+	string edge;
+	string s;
+	TreeNode *left,*right;
+};
+struct listnode{
+	TreeNode * ptr;
+	listnode * next;
+};
+class huffman{
+	public:
+	TreeNode* root;
+	listnode* head;
+	huffman(){
+		head=NULL;
+		root=NULL;
+	}
+	void listinsert(string a, int f){
+		TreeNode *tnode = new TreeNode;
+		tnode->left=NULL;
+		tnode->right=NULL;
+		tnode->s=a;
+		tnode->value=f;
+		listnode *lnode = new listnode;
+		lnode->next=NULL;
+		lnode->ptr=tnode;	
+		listnode *lpos, *ltemp = head;
+		if(ltemp==NULL)
+			head=lnode;
+		else{
+			while(ltemp!=NULL){
+				if(f<=ltemp->ptr->value&&ltemp==head){
+					lnode->next=ltemp;
+					head=lnode;
+					break;
+				}
+				if(f>=ltemp->ptr->value&&ltemp->next==NULL){
+					ltemp->next=lnode;
+					break;
+				}
+				
+				if(f>=ltemp->ptr->value&&f<ltemp->next->ptr->value){
+					lnode->next=ltemp->next;
+					ltemp->next=lnode;
+					break;
+				}
+				lpos=ltemp;
+				ltemp=ltemp->next;
+			}
+		}
+	}
+	void treemaker(){
+		TreeNode *temp1, *temp2;
+		string str;
+		int num;
+		while(head->next!=NULL){
+			
+			temp1=head->ptr;
+			head=head->next;
+			temp2=head->ptr;
+			head=head->next;
+			num=temp1->value+temp2->value;
+			str=temp1->s+temp2->s;
+			listinsert(str,num);
+			treeinsert(temp1,temp2,str,num);
+		}
+		if(head->next==NULL)
+			treeshow(head->ptr,0,'@');
+	}
+	void treeinsert(TreeNode *t1, TreeNode *t2,string key, int val){
+		listnode *temp=head;
+		while(temp!=NULL){
+			if(temp->ptr->s==key&&temp->ptr->value==val){
+				if(t1->value<=t2->value){
+					temp->ptr->left=t1;
+					temp->ptr->right=t2;
+				}
+				else{
+					temp->ptr->left=t2;
+					temp->ptr->right=t1;
+				}
+			}
+			temp=temp->next;
+		}
+	}
+	
+	void huffmanencoder(TreeNode *root,string str){
+		if(root->left==NULL&&root->right==NULL){
+			root->edge=str;
+			return;	
+		}
+		huffmanencoder(root->left,"0");
+		root->edge=str;
+		huffmanencoder(root->right,"1");
+		root->edge=str;
+	}
+	
+	void huffmancodegenerator(TreeNode *root, string str){
+		if(root->left==NULL&&root->right==NULL){
+			cout<<root->s<<"(";
+			root->s="";
+			root->s=str+root->edge;
+			cout<<root->s<<")\t";
+			return;
+		}
+		if(str!="-1"){
+			root->s="";
+			root->s=str+root->edge;	
+		}
+		else
+			root->s=root->edge;
+		huffmancodegenerator(root->left,root->s);
+		if(str!="-1"){
+			root->s="";
+			root->s=str+root->edge;
+		}
+		else
+			root->s=root->edge;
+		huffmancodegenerator(root->right,root->s);	
+	}
+	
+	void listshow(){
+		listnode *ltemp = head;
+		if(ltemp==NULL)
+			cout<<"Sorry\n";
+		else{
+			while(ltemp!=NULL){
+				cout<<ltemp->ptr->s<<"="<<ltemp->ptr->value<<"\t";
+				ltemp=ltemp->next;
+			}
+			cout<<endl;
+		}
+	}
+	void treeshow(TreeNode *root, int space , char a) 
+	{ 
+    	if (root == NULL) 
+    	    return; 
+		space++; 
+		treeshow(root->right, space, '/');
+		cout<<"\n"; 
+		if(root!=head->ptr)
+    	for (int i =0; i < space; i++){
+    		cout<<"     ";
+    		if(i==space-1)
+    			cout<<a<<"--"<<root->edge<<"--"; 
+		}
+        if(root->left==NULL&&root->right==NULL)
+			cout<<root->s;	
+    	cout<<"("<<root->value<<")"; 
+		treeshow(root->left, space, '\\');
+		space--; 
+	} 
+};
+int main(){
+	string s="EIEIOEIEIOEEIOPPEEEEPPSSTTEEEPPPPTTSSEIEIOEIEIOEEIOPPEEEEEEEPPPPTTSS";
+	huffman hm;
+    	map<char, int> charstrng;
+	map<char,int>::iterator itr;
+	for(int i=0; s[i]!='\0'; i++){
+		if(charstrng.count(s[i])>0)
+		{
+			itr=charstrng.find(s[i]);
+			itr->second=itr->second+1;
+		}
+		else{
+			charstrng.insert({ s[i], 1 });
+		}
+	}
+	cout<<"\t\t!!!!----Objectives of assignment----!!!!\n\n1.Count the frequency of occurrence for the letters in the sequence:-\n\n"<<s<<"\n\n";
+	for (itr = charstrng.begin(); itr != charstrng.end(); itr++) {
+		cout << itr->first 
+             << "=" << itr->second << '\t';
+	}
+	cout<<endl;
+	
+	itr=charstrng.begin();
+	int min1=itr->second;
+	char s1=itr->first;
+	while(!charstrng.empty()){
+		itr=charstrng.begin();
+		min1=itr->second;
+		s1=itr->first;
+		for(itr=charstrng.begin(); itr!=charstrng.end(); itr++){
+			if(charstrng.size()==1){
+				min1=itr->second;
+				s1=itr->first;
+				break;
+			}
+			if(min1>itr->second){
+				min1=itr->second;
+				s1=itr->first;
+			}
+		}
+		if(charstrng.size()==1){
+			string str(1,s1);
+			hm.listinsert(str,min1);
+			charstrng.erase(s1);
+			break;
+		}
+		string str(1,s1);
+		hm.listinsert(str,min1);
+		charstrng.erase(s1);
+	}
+    if(charstrng.empty())
+    cout<<"\n2. Sort the frequencies into increasing order:-\n\n";
+	hm.listshow();
+	cout<<"\n3. Build the Huffman coding tree:\n\n";
+	hm.treemaker();
+	cout<<endl;	
+	hm.huffmanencoder(hm.head->ptr,"-1");
+	cout<<"\n4.1_Assign a 0 to left branch and a 1 to the right branch\n\n";
+	hm.treeshow(hm.head->ptr,0,'@');
+	cout<<"\n\n4.2_Huffman code for each character.\n";
+	hm.huffmancodegenerator(hm.head->ptr,"-1");
+}
+
